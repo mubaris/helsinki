@@ -1,23 +1,22 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from github import Github
+import requests
 
-from secret import username, password
+from secret import secret_key
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:HelloWorld@localhost/helsinki'
 db = SQLAlchemy(app)
-gh = Github(username, password)
 
 class User(db.Model):
 	__tablename__ = 'user'
 
 	username = db.Column(db.String(255), primary_key=True)
-	name = db.Column(db.String(255))
+	visited = db.Column(db.Boolean)
 
-	def __init__(self, username, name):
+	def __init__(self, username, visited):
 		self.username = username
-		self.name = name
+		self.visited = visited
 
 class Project(db.Model):
 	__tablename__ = 'project'
@@ -36,6 +35,10 @@ class Project(db.Model):
 @app.route('/')
 def hello():
 	return 'Hello, World'
+
+def start(username):
+	url = 'https://api.github.com/users/{}/following'.format(username)
+	res = requests.get(url)
 
 if __name__ == '__main__':
 	app.run()
